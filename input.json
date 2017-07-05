@@ -1,0 +1,48 @@
+ [
+        {
+            "id": "584a4e927ad2f7b235434c66",
+            "title": "Yahoo Shuts Down Its Video Portal",
+            "tvl2Cats": {
+                "BusinessModel": 25.050006430607,
+                "DataSecurityAndPrivacy": 91.8033081347889,
+                "ProductIntegrityAndInnovation": 80.9882555329467
+            },
+            "articlePubDateMs": 1420088656000.0,
+            "tags": [
+                {
+                    "displayName": "Facebook",
+                    "ISIN": "US30303M1027"
+                }
+            ]
+        },
+        {
+            "id": "584a4e927ad2f7b235434c66",
+            "title": "Yahoo Shuts Down Its Video Portal",
+            "tvl2Cats": {
+                "ProductIntegrityAndInnovation": 53.9628893820853
+            },
+            "articlePubDateMs": 1420088656000.0,
+            "tags": [
+                {
+                    "displayName": "Facebook",
+                    "ISIN": "US30303M1027"
+                }
+            ]
+        },
+        {
+            "id": "584a4e927ad2f7b235434c66",
+            "title": "Yahoo Shuts Down Its Video Portal",
+            "tvl2Cats": {
+                "BusinessModel": 26.7384612102743,
+                "CorporateGovernance": 50.2795377389575,
+                "ProductIntegrityAndInnovation": 32.1347520408878
+            },
+            "articlePubDateMs": 1420162200000,
+            "tags": [
+                {
+                    "displayName": "Facebook",
+                    "ISIN": "US30303M1027"
+                }
+            ]
+        }
+]
