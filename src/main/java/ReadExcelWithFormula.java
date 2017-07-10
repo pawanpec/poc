@@ -83,8 +83,7 @@ public class ReadExcelWithFormula {
 				}
 
 			}
-	        Map inputData=new LinkedHashMap<String, Date>();
-	        String key="";
+	        Map inputData=new LinkedHashMap<Integer, Date>();
 	        for (int i = 11; i <totalRows-1; i++) {
 	        	Cell cell1 = sheet.getRow(i).getCell(0, Row.CREATE_NULL_AS_BLANK);
 	        	Cell cell2 = sheet.getRow(i+1).getCell(0, Row.CREATE_NULL_AS_BLANK);
@@ -96,17 +95,22 @@ public class ReadExcelWithFormula {
 					if (d1.getTime()==d2.getTime()) {
 						continue;
 					} else {
-						key = i + "_0";
-						inputData.put(key, d1);
+						inputData.put(i, d1.getTime());
 					} 
 				}else{
 					if (d1!=null) {
 						d1=truncateToDay(d1);
-						inputData.put(key, d1.getTime());
+						inputData.put(i, d1.getTime());
 					}
 				}
 	        }
 	        HSSFFormulaEvaluator.evaluateAllFormulaCells(workbook);
+	        //fetch api data
+	        //iterate over map
+	        //get value of date from map
+	        //get pulse score for that date
+	        //get row to update which is a key in map
+	        //iterate over pulse score object and update the pulse score in actual field
 	        
 	        inp.close();
 	    	output_file =new FileOutputStream("output.xls");  
