@@ -1,9 +1,14 @@
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFEvaluationWorkbook;
@@ -22,6 +27,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+
+import com.sun.image.codec.jpeg.TruncatedFileException;
 
 
 public class ReadExcelWithFormula {
@@ -76,7 +83,32 @@ public class ReadExcelWithFormula {
 				}
 
 			}
+	        Map inputData=new LinkedHashMap<String, Date>();
+	        String key="";
+	        for (int i = 11; i <totalRows-1; i++) {
+	        	Cell cell1 = sheet.getRow(i).getCell(0, Row.CREATE_NULL_AS_BLANK);
+	        	Cell cell2 = sheet.getRow(i+1).getCell(0, Row.CREATE_NULL_AS_BLANK);
+	        	Date d1 = cell1.getDateCellValue();
+				Date d2 = cell2.getDateCellValue();
+	        	if (d1!=null&&d2!=null) {
+	        		d1=truncateToDay(d1);
+	        		d2=truncateToDay(d2);
+					if (d1.getTime()==d2.getTime()) {
+						continue;
+					} else {
+						key = i + "_0";
+						inputData.put(key, d1);
+					} 
+				}else{
+					if (d1!=null) {
+						d1=truncateToDay(d1);
+						inputData.put(key, d1.getTime());
+					}
+				}
+	        }
+	        System.out.println(inputData);
 	        HSSFFormulaEvaluator.evaluateAllFormulaCells(workbook);
+	        
 	        inp.close();
 	    	output_file =new FileOutputStream("output.xls");  
 	    	 //write changes
@@ -88,6 +120,15 @@ public class ReadExcelWithFormula {
 	    	ex.printStackTrace();
 	    }
 	}
+	 private static Date truncateToDay(Date date) {
+         Calendar calendar = Calendar.getInstance();
+         calendar.setTime(date);
+         calendar.set(Calendar.HOUR_OF_DAY, 0);
+         calendar.set(Calendar.MINUTE, 0);
+         calendar.set(Calendar.SECOND, 0);
+         calendar.set(Calendar.MILLISECOND, 0);
+         return calendar.getTime();
+     }
 
 	private static void handleRecord(HSSFSheet sheet,int currentRow,JSONObject jsonObject,HSSFEvaluationWorkbook 
 			formulaParsingWorkbook, SharedFormula sharedFormula,FormulaEvaluator evaluator,List tvl2CatsKeys) {
