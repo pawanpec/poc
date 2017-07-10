@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFEvaluationWorkbook;
+import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.SpreadsheetVersion;
@@ -75,7 +76,7 @@ public class ReadExcelWithFormula {
 				}
 
 			}
-	        evaluator.clearAllCachedResultValues();
+	        HSSFFormulaEvaluator.evaluateAllFormulaCells(workbook);
 	        inp.close();
 	    	output_file =new FileOutputStream("output.xls");  
 	    	 //write changes
@@ -171,8 +172,7 @@ public class ReadExcelWithFormula {
 		if(value!=null){
 			sheet.getRow(row).getCell(column, Row.CREATE_NULL_AS_BLANK).setCellValue(value);
 		}else if(row==11){
-			sheet.getRow(row).getCell(column, Row.CREATE_NULL_AS_BLANK).setCellValue("");
-			sheet.getRow(row).getCell(column+1, Row.CREATE_NULL_AS_BLANK).setCellValue(0);
+			sheet.getRow(row).getCell(column, Row.CREATE_NULL_AS_BLANK).setCellType(Cell.CELL_TYPE_BLANK);
 		}
 		 // set A1=2
 	}
