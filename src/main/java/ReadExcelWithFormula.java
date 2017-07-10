@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFEvaluationWorkbook;
+import org.apache.poi.hssf.usermodel.HSSFFormulaEvaluator;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.SpreadsheetVersion;
@@ -24,7 +25,7 @@ import org.json.simple.JSONObject;
 
 
 public class ReadExcelWithFormula {
-	static int startColumn=1,endColumn=93;
+	static int startColumn=1,endColumn=130;
 
 	public static void main(String args[]) {
 		int currentRow = 12;
@@ -34,7 +35,7 @@ public class ReadExcelWithFormula {
 	    HSSFWorkbook workbook;
 	    
 	    try {            
-	        inp = new FileInputStream("Insight_test.xls");
+	        inp = new FileInputStream("input_pulse.xls");
 	        workbook = new HSSFWorkbook(inp);
 			HSSFEvaluationWorkbook formulaParsingWorkbook = HSSFEvaluationWorkbook.create((HSSFWorkbook) workbook);
 			SharedFormula sharedFormula = new SharedFormula(SpreadsheetVersion.EXCEL2007);
@@ -61,9 +62,23 @@ public class ReadExcelWithFormula {
 				handleRecord(sheet,currentRow,jsonObject,formulaParsingWorkbook, sharedFormula,evaluator,tvl2CatsKeys);
 				currentRow++;
 	        }
+	        int totalRows=12+jsonarray.size() ;
+	        for (int i = 0; i < tvl2CatsKeys.size(); i++) {
+				int cellNumber = searchKey(sheet, 8, (String) tvl2CatsKeys.get(i));
+				// raw value will be found (or added) at row : currentRow and
+				// column : cellNumber -2
+				Cell c = sheet.getRow(8).getCell(cellNumber - 2, Row.CREATE_NULL_AS_BLANK);
+				String formula = c.toString();
+				if (formula.length() > 3) {
+					String newFormula = formula.substring(0, formula.length() - 3) +totalRows + ")";
+					c.setCellType(HSSFCell.CELL_TYPE_FORMULA);
+					c.setCellFormula(newFormula);
+				}
 
+			}
+	        HSSFFormulaEvaluator.evaluateAllFormulaCells(workbook);
 	        inp.close();
-	    	output_file =new FileOutputStream("Insight_test.xls");  
+	    	output_file =new FileOutputStream("output.xls");  
 	    	 //write changes
 	    	workbook.write(output_file);
 	    	//close the stream
@@ -78,7 +93,7 @@ public class ReadExcelWithFormula {
 			formulaParsingWorkbook, SharedFormula sharedFormula,FormulaEvaluator evaluator,List tvl2CatsKeys) {
 		    	
 		// set date in 1st column : timestamp from JSON and add other values from JSON
-		handleCellFromJson(sheet,currentRow,jsonObject,tvl2CatsKeys);
+		handleCellFromJson(sheet,currentRow-1,jsonObject,tvl2CatsKeys);
 		
 		// handle all the cell with formula
 		for(int i=startColumn;i<=endColumn;i++) {
@@ -111,12 +126,10 @@ public class ReadExcelWithFormula {
     		 } else {
     			 modelValue = (Double) newValuesTvl2Cats.get((String) tvl2CatsKeys.get(i));	 
     		 }
-    		 if(modelValue!=null){
        		     // search this key in excel file
                  int cellNumber = searchKey(sheet,8,(String)tvl2CatsKeys.get(i));
                  //raw value will be found (or added) at row : currentRow and column : cellNumber -2
                	 setcellValue(sheet,currentRow, cellNumber-2,modelValue);
-    		 }
     		
     	 }
 	}
@@ -156,7 +169,12 @@ public class ReadExcelWithFormula {
 		if(sheet.getRow(row) == null) {
 			sheet.createRow(row);
 		}
-		sheet.getRow(row).getCell(column, Row.CREATE_NULL_AS_BLANK).setCellValue(value); // set A1=2
+		if(value!=null){
+			sheet.getRow(row).getCell(column, Row.CREATE_NULL_AS_BLANK).setCellValue(value);
+		}else if(row==11){
+			sheet.getRow(row).getCell(column, Row.CREATE_NULL_AS_BLANK).setCellType(Cell.CELL_TYPE_BLANK);
+		}
+		 // set A1=2
 	}
 	
 	private static void copyCellFormula(HSSFEvaluationWorkbook formulaParsingWorkbook,SharedFormula sharedFormula,
