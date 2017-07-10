@@ -106,7 +106,6 @@ public class ReadExcelWithFormula {
 					}
 				}
 	        }
-	        System.out.println(inputData);
 	        HSSFFormulaEvaluator.evaluateAllFormulaCells(workbook);
 	        
 	        inp.close();
