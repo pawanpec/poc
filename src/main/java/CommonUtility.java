@@ -55,7 +55,7 @@ public class CommonUtility {
 		}
 		return (JSONArray) jsonObject.get("series");
 	}
-	private static JSONObject getValue(JSONArray array, long key)
+	public static JSONObject getValue(JSONArray array, long key)
 	{
 		JSONObject value = null;
 	    for (int i = 0; i < array.size(); i++)
@@ -69,6 +69,32 @@ public class CommonUtility {
 
 	    return value;
 	}
+	public static void updateCurrentRowActualScore(int currentrow, JSONObject currentObj, HSSFSheet sheet) {
+        		
+		//get row to update which is a key in map
+		//iterate over pulse score object and update the pulse score in actual field
+		
+		for(Iterator iterator = currentObj.keySet().iterator(); iterator.hasNext();) {
+		    String key = (String) iterator.next();
+		    String value = currentObj.get(key).toString();
+		    
+		    int cellNumber = ReadExcelWithFormula.searchKey(sheet, 8, key);
+		    
+		    setcellValue(sheet, currentrow, cellNumber + 2, Double.parseDouble(value));		   		    
+		}
+		        
+	}
+	public static void setcellValue(Sheet sheet, int row, int column,Double value) {	
+		if(sheet.getRow(row) == null) {
+			sheet.createRow(row);
+		}
+		if(value!=null){
+			sheet.getRow(row).getCell(column, Row.CREATE_NULL_AS_BLANK).setCellValue(value);
+			System.out.println(sheet.getRow(row).getCell(column, Row.CREATE_NULL_AS_BLANK));
+
+		}		 
+	}
+	
 	public static String getAPIRespose(String urlString) {
 		StringBuilder result = new StringBuilder();
 		try {
