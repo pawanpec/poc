@@ -15,12 +15,8 @@ import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 
 public class ReadInputData {
+	
 	public static JSONParser parser = new JSONParser();
-
-	public static void main(String[] args) {
-		//getInputData();
-		readInputDataFromAPI();
-	}
 
 	@SuppressWarnings("finally")
 	public static JSONArray getInputData() {
@@ -63,8 +59,7 @@ public class ReadInputData {
 		}
 	}
 
-	public static JSONArray readInputDataFromAPI() {
-		String apiUrl = "https://devapi.insight360.io/v3/data/articles?start_date=2016-04-01&end_date=2016-04-30&ISIN=US30303M1027&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2RldmF1dGguaW5zaWdodDM2MC5pbyIsInN1YiI6InNzZGUiLCJleHAiOiIyMDE4LTA3LTA2VDIwOjQ2OjM0LjQzNVoiLCJpYXQiOiIyMDE3LTA3LTA2VDIwOjQ2OjM0LjQzNVoiLCJuYW1lIjoiWW9naURRIiwiZW5jIjoiZTA0ZmIxOWQ0MGQ3OTkzM2QwYjM3ZDZmYzRhM2MwMzdkNTQwZWZjMzk4Y2U2OWNlZjc2YTM5NjRkMzdhYzBiNWJmMjA2NzAxNzg2MzcyODZkZjk0ZDlhMzg4MzNmYWJlNWE5ODUzMjI3M2Q3NmM5YTgxMmJkOGM4NjQyZmQ2YmIwMGVmOTAzZTM0OTI2YTMzNTE0YWY0YmI1ZjVlOTM2MGJiOGZhYjYyOWI5ODgxMjM4ZjBhMDEzZjAyZWE1MGQwZDZlNzUxNDZiZjhjYjZhOTRkZWMyMTk4MjBlOGQ0ZWE3NjY1NjZlOTViMTRmN2YxZWVkOWFlNWNkYTJjNDJiOWI1MzU4YzE1OTgxM2Y1Y2E5ZmZiMzlkYWFkNDUyNDg4NmY5Mzc2ZTY0NjQ3YTUxZTA5OTIzNGJjZGE2NWI2N2NjMDNmODRkZDU5ZTNhMzNkZmVmMDhmMDBkNjEwZDc0ZGJkMTNhNzA2ZDhkYTgzNWEwZjJiOWZlMjY3MGY2MGYxZjFmNmM3MDRjNDBlMzI4YzA5MWFlYmFjN2NkY2MxN2M0MGRkMTZkYmJmYTYzMDhmYzMyMzRiIn0.J-lgV5EsDCaJlZibkvgr1vgwvAC0yhitB_yN7SrkbJ4";
+	public static JSONArray readInputDataFromAPI(String apiUrl) {
 		String apiResponse = CommonUtility.getAPIRespose(apiUrl);
 
 		JSONArray jsonArr = null;

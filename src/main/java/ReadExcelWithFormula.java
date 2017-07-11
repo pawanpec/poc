@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -35,7 +36,8 @@ import com.sun.image.codec.jpeg.TruncatedFileException;
 public class ReadExcelWithFormula {
 	static int startColumn=1,endColumn=130;
 	public static final String urlString = "https://devapi.insight360.io/v3/data/companies/US30303M1027/series?start_date=2016-04-01&end_date=2016-04-30&metrics=allmetrics&score_type=pulse&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2RldmF1dGguaW5zaWdodDM2MC5pbyIsInN1YiI6ImZha2VfaW50ZXJuYWxfdHZsX2FwaV91c2VyQHRydXZhbHVlbGFicy5jb20iLCJleHAiOiIyMDE4LTA1LTA5VDEwOjE3OjM1LjQwMFoiLCJpYXQiOiIyMDE3LTA1LTA5VDEwOjE3OjM1LjQwMFoiLCJuYW1lIjoiSW50ZXJuYWwgQXBpIFVzZXIiLCJlbmMiOiJlMDRmYjE5ZDQwZDc5OTMzZDBiMzdkNmZjNGEzYzAzN2Q1NDVlY2MyOTdjZTY5Y2VmNzZhMzk2NGQzN2FjMGI1YmYyMDYzNTUyMDY1MjA4MWRmYzRkOGY2ZDU2OGY3ZWQ1ODliMDIyODcwOGI2MDk1ODEyYmQ4Yzg2NDJmZDZiYjAwZWY5MDNlMzQ5MjZhMzM1MTRhZjRiZjBiMDY5NTMyYmM4ZmZiNjNjZWM1ZGEyZWRjMDgwMjZlMDhlOTBjZGNkOWU3NTE0NmJmOGNiNmE5NGRlYzIxOTgyMGU4ZDRlYTc2NjU2NmZjNDkxYmY3OGNhYjk1YjU0YmNmMjM0ZGJjOTAyMDhlMTBhODFjY2NjN2UyYjQ2ODhhZTYzMDM1OWIyYmRjMjViZTAxNDZhYzFiMDhkNTdiZWQ4MjZiYWQzMmRiNjVjNDk4MTRhZmI4MjhmM2UxYzQ1NTlhMzhjMzA2ZDI0MmY3NGRjYmM3OTgxOTE5N2ZkOWNlNjM1MjNjZWJmMmU2YWU1ZjkxNTQxN2I4MTIwNWViZjAzYmRjYzM3OTU2OGM0NTk2YjBhNTdiZTBjYjNiNDRiOTIyNGZlYzg5MmRlMWVlMDhhYTlhOWUxODljNTBkZGFkN2EwNmIzNDVlNDFhNGYyMTgxODMwMWI1ODUzZjYxZmU2ZmU2MWM5NDllOTQ0OTQzZWQ4ZWY1OWZhZjc1YzE4N2I0In0.ViYLzDvwPysQsjZrWTeItwX74xVzVhdByIdTRdTU748";
-
+	public static final String apiUrl = "https://devapi.insight360.io/v3/data/articles?start_date=2016-04-01&end_date=2016-04-30&ISIN=US30303M1027&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2RldmF1dGguaW5zaWdodDM2MC5pbyIsInN1YiI6InNzZGUiLCJleHAiOiIyMDE4LTA3LTA2VDIwOjQ2OjM0LjQzNVoiLCJpYXQiOiIyMDE3LTA3LTA2VDIwOjQ2OjM0LjQzNVoiLCJuYW1lIjoiWW9naURRIiwiZW5jIjoiZTA0ZmIxOWQ0MGQ3OTkzM2QwYjM3ZDZmYzRhM2MwMzdkNTQwZWZjMzk4Y2U2OWNlZjc2YTM5NjRkMzdhYzBiNWJmMjA2NzAxNzg2MzcyODZkZjk0ZDlhMzg4MzNmYWJlNWE5ODUzMjI3M2Q3NmM5YTgxMmJkOGM4NjQyZmQ2YmIwMGVmOTAzZTM0OTI2YTMzNTE0YWY0YmI1ZjVlOTM2MGJiOGZhYjYyOWI5ODgxMjM4ZjBhMDEzZjAyZWE1MGQwZDZlNzUxNDZiZjhjYjZhOTRkZWMyMTk4MjBlOGQ0ZWE3NjY1NjZlOTViMTRmN2YxZWVkOWFlNWNkYTJjNDJiOWI1MzU4YzE1OTgxM2Y1Y2E5ZmZiMzlkYWFkNDUyNDg4NmY5Mzc2ZTY0NjQ3YTUxZTA5OTIzNGJjZGE2NWI2N2NjMDNmODRkZDU5ZTNhMzNkZmVmMDhmMDBkNjEwZDc0ZGJkMTNhNzA2ZDhkYTgzNWEwZjJiOWZlMjY3MGY2MGYxZjFmNmM3MDRjNDBlMzI4YzA5MWFlYmFjN2NkY2MxN2M0MGRkMTZkYmJmYTYzMDhmYzMyMzRiIn0.J-lgV5EsDCaJlZibkvgr1vgwvAC0yhitB_yN7SrkbJ4";
+	
 	public static void main(String args[]) {
 		int currentRow = 12;
 	    FileInputStream inp = null;
@@ -49,10 +51,7 @@ public class ReadExcelWithFormula {
 			HSSFEvaluationWorkbook formulaParsingWorkbook = HSSFEvaluationWorkbook.create((HSSFWorkbook) workbook);
 			SharedFormula sharedFormula = new SharedFormula(SpreadsheetVersion.EXCEL2007);
 			FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
-	        //JSONArray jsonarray = ReadInputData.getInputData();
-			//Now read data from API instead of database.
-			JSONArray jsonarray = ReadInputData.readInputDataFromAPI();
-	        // get all the feilds from excel file
+			JSONArray jsonarray = ReadInputData.readInputDataFromAPI(apiUrl);
             HSSFSheet sheet = workbook.getSheetAt(0);
 	        Row row = sheet.getRow(8);
 	        List tvl2CatsKeys = new ArrayList();
@@ -87,7 +86,7 @@ public class ReadExcelWithFormula {
 				}
 
 			}
-	        Map inputData=new LinkedHashMap<Integer, Date>();
+	        Map<Integer, Long> inputData=new LinkedHashMap<Integer, Long>();
 	        for (int i = 11; i <totalRows-1; i++) {
 	        	Cell cell1 = sheet.getRow(i).getCell(0, Row.CREATE_NULL_AS_BLANK);
 	        	Cell cell2 = sheet.getRow(i+1).getCell(0, Row.CREATE_NULL_AS_BLANK);
@@ -114,20 +113,19 @@ public class ReadExcelWithFormula {
 	        JSONArray  jsonArr = CommonUtility.getDataFromAPI(urlString);
 	        
 	        //iterate over map	        
-	        Iterator<Map.Entry<Integer, Long>> mapIterator = inputData.entrySet().iterator();
-	        
-	        while (mapIterator.hasNext()) {
-	            Map.Entry<Integer, Long> pairObj = mapIterator.next();
-	            
+	        Set<Integer> keys=inputData.keySet();
+	        for (Integer key : keys) {
+				Long hourMs=inputData.get(key);
 	            //get value of date from map
-	            JSONObject currentObj = CommonUtility.getValue(jsonArr, pairObj.getValue());
+	            JSONObject currentObj = CommonUtility.getValue(jsonArr,hourMs);
 
-	            //get pulse score for that date
-	            JSONObject pulseObj = (JSONObject)currentObj.get("pulse");
-	        
-	            //get row to update which is a key in map	        
-		        //iterate over pulse score object and update the pulse score in actual field
-	            CommonUtility.updateCurrentRowActualScore(pairObj.getKey(),pulseObj,sheet);
+	            if (currentObj!=null) {
+					//get pulse score for that date
+					JSONObject pulseObj = (JSONObject) currentObj.get("pulse");
+					//get row to update which is a key in map	        
+					//iterate over pulse score object and update the pulse score in actual field
+					CommonUtility.updateCurrentRowActualScore(key, pulseObj, sheet);
+				}
 	        }
 	        
 	        	        
@@ -166,8 +164,6 @@ public class ReadExcelWithFormula {
 
 	private static void handleCellFromJson(Sheet sheet,int currentRow,JSONObject jsonObject,List tvl2CatsKeys) {
 		Long value = 0l;
-		Double modelValue;
-				
 		// set date in 1st column : timestamp from JSON
 		if(jsonObject.get("articlePubDateMs") instanceof Double) {
 			value = new Double((Double) jsonObject.get("articlePubDateMs")).longValue();
@@ -182,22 +178,29 @@ public class ReadExcelWithFormula {
 					
 		//for tvl2Cats values
     	 JSONObject newValuesTvl2Cats = (JSONObject)jsonObject.get("tvl2Cats");
-    	 try {
-    		 for(int i = 0;i<tvl2CatsKeys.size();i++){
-        		 if(newValuesTvl2Cats.get((String) tvl2CatsKeys.get(i)) instanceof Long){
-        			modelValue = Double.longBitsToDouble((Long)newValuesTvl2Cats.get((String) tvl2CatsKeys.get(i)));
-        		 } else {
-        			 modelValue = (Double) newValuesTvl2Cats.get((String) tvl2CatsKeys.get(i));	 
-        		 }
-           		     // search this key in excel file
-                     int cellNumber = searchKey(sheet,8,(String)tvl2CatsKeys.get(i));
-                     //raw value will be found (or added) at row : currentRow and column : cellNumber -2
-                   	 setcellValue(sheet,currentRow, cellNumber-2,modelValue);
-        		
-        	 }
-    	 } catch(NullPointerException npe) {
-    		 npe.printStackTrace();
-    	 }    	 
+    	 if (newValuesTvl2Cats!=null) {
+			try {
+				for (int i = 0; i < tvl2CatsKeys.size(); i++) {
+					Double modelValue = null;
+					String key = (String) tvl2CatsKeys.get(i);
+					Object keyValue = newValuesTvl2Cats.get(key);
+					if (keyValue != null) {
+						if (keyValue instanceof Long) {
+							modelValue = Double.longBitsToDouble((Long) keyValue);
+						} else {
+							modelValue = (Double) keyValue;
+						}
+					}
+					// search this key in excel file
+					int cellNumber = searchKey(sheet, 8, key);
+					//raw value will be found (or added) at row : currentRow and column : cellNumber -2
+					setcellValue(sheet, currentRow, cellNumber - 2, modelValue);
+
+				}
+			} catch (Exception npe) {
+				npe.printStackTrace();
+			} 
+		}    	 
 	}
 	
 	public static int searchKey(Sheet sheet, int rowNumber, String searchValue) {
@@ -252,16 +255,16 @@ public class ReadExcelWithFormula {
 	
 	private static void handleCell(int type,Cell cell,FormulaEvaluator evaluator) {
 	    if (type == HSSFCell.CELL_TYPE_STRING) {
-	      System.out.println(cell.getStringCellValue());
+	    //  System.out.println(cell.getStringCellValue());
 	    } else if (type == HSSFCell.CELL_TYPE_NUMERIC) {
-	       System.out.println(cell.getNumericCellValue());
+	      // System.out.println(cell.getNumericCellValue());
 	    } else if (type == HSSFCell.CELL_TYPE_BOOLEAN) {
-	       System.out.println(cell.getBooleanCellValue());
+	      // System.out.println(cell.getBooleanCellValue());
 	    } else if (type == HSSFCell.CELL_TYPE_FORMULA) {
 	    	evaluator.evaluateFormulaCell(cell);
 	        handleCell(cell.getCachedFormulaResultType(), cell, evaluator);
 	    } else {
-	       System.out.println("");
+	     //  System.out.println("");
 	    }
 	}	
 }
