@@ -49,7 +49,9 @@ public class ReadExcelWithFormula {
 			HSSFEvaluationWorkbook formulaParsingWorkbook = HSSFEvaluationWorkbook.create((HSSFWorkbook) workbook);
 			SharedFormula sharedFormula = new SharedFormula(SpreadsheetVersion.EXCEL2007);
 			FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
-	        JSONArray jsonarray = ReadInputData.getInputData();
+	        //JSONArray jsonarray = ReadInputData.getInputData();
+			//Now read data from API instead of database.
+			JSONArray jsonarray = ReadInputData.readInputDataFromAPI();
 	        // get all the feilds from excel file
             HSSFSheet sheet = workbook.getSheetAt(0);
 	        Row row = sheet.getRow(8);
@@ -180,19 +182,22 @@ public class ReadExcelWithFormula {
 					
 		//for tvl2Cats values
     	 JSONObject newValuesTvl2Cats = (JSONObject)jsonObject.get("tvl2Cats");
-    	    
-    	 for(int i = 0;i<tvl2CatsKeys.size();i++){
-    		 if(newValuesTvl2Cats.get((String) tvl2CatsKeys.get(i)) instanceof Long){
-    			modelValue = Double.longBitsToDouble((Long)newValuesTvl2Cats.get((String) tvl2CatsKeys.get(i)));
-    		 } else {
-    			 modelValue = (Double) newValuesTvl2Cats.get((String) tvl2CatsKeys.get(i));	 
-    		 }
-       		     // search this key in excel file
-                 int cellNumber = searchKey(sheet,8,(String)tvl2CatsKeys.get(i));
-                 //raw value will be found (or added) at row : currentRow and column : cellNumber -2
-               	 setcellValue(sheet,currentRow, cellNumber-2,modelValue);
-    		
-    	 }
+    	 try {
+    		 for(int i = 0;i<tvl2CatsKeys.size();i++){
+        		 if(newValuesTvl2Cats.get((String) tvl2CatsKeys.get(i)) instanceof Long){
+        			modelValue = Double.longBitsToDouble((Long)newValuesTvl2Cats.get((String) tvl2CatsKeys.get(i)));
+        		 } else {
+        			 modelValue = (Double) newValuesTvl2Cats.get((String) tvl2CatsKeys.get(i));	 
+        		 }
+           		     // search this key in excel file
+                     int cellNumber = searchKey(sheet,8,(String)tvl2CatsKeys.get(i));
+                     //raw value will be found (or added) at row : currentRow and column : cellNumber -2
+                   	 setcellValue(sheet,currentRow, cellNumber-2,modelValue);
+        		
+        	 }
+    	 } catch(NullPointerException npe) {
+    		 npe.printStackTrace();
+    	 }    	 
 	}
 	
 	public static int searchKey(Sheet sheet, int rowNumber, String searchValue) {
