@@ -37,7 +37,10 @@ public class CommonUtility {
 	    for (int i = 0; i < array.size(); i++)
 	    {
 	    	JSONObject jsonObject = (JSONObject) array.get(i);
+	    	
 	        Long hourMs=(Long) jsonObject.get("hourMs");
+	        
+	        
 	        if (hourMs.equals(key))
 	        {
 	        	value=jsonObject;

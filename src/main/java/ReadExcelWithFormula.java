@@ -51,7 +51,7 @@ public class ReadExcelWithFormula {
 			HSSFEvaluationWorkbook formulaParsingWorkbook = HSSFEvaluationWorkbook.create((HSSFWorkbook) workbook);
 			SharedFormula sharedFormula = new SharedFormula(SpreadsheetVersion.EXCEL2007);
 			FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
-			JSONArray jsonarray = ReadInputData.readInputDataFromAPI(apiUrl);
+			JSONArray jsonarray = ReadInputData.readInputDataFromAPI(apiUrl);			
             HSSFSheet sheet = workbook.getSheetAt(0);
 	        Row row = sheet.getRow(8);
 	        List tvl2CatsKeys = new ArrayList();
@@ -88,22 +88,25 @@ public class ReadExcelWithFormula {
 			}
 	        Map<Integer, Long> inputData=new LinkedHashMap<Integer, Long>();
 	        for (int i = 11; i <totalRows-1; i++) {
+	        	
 	        	Cell cell1 = sheet.getRow(i).getCell(0, Row.CREATE_NULL_AS_BLANK);
 	        	Cell cell2 = sheet.getRow(i+1).getCell(0, Row.CREATE_NULL_AS_BLANK);
-	        	Date d1 = cell1.getDateCellValue();
+	        	Date d1 = cell1.getDateCellValue();	    
 				Date d2 = cell2.getDateCellValue();
+				
 	        	if (d1!=null&&d2!=null) {
 	        		d1=truncateToDay(d1);
 	        		d2=truncateToDay(d2);
-					if (d1.getTime()==d2.getTime()) {
+	        		
+					if (d1.getTime() == d2.getTime()) {
 						continue;
 					} else {
-						inputData.put(i, d1.getTime());
+						inputData.put(i, getUTCTime(d1).getTime());
 					} 
 				}else{
 					if (d1!=null) {
 						d1=truncateToDay(d1);
-						inputData.put(i, d1.getTime());
+						inputData.put(i, getUTCTime(d1).getTime());
 					}
 				}
 	        }
@@ -118,6 +121,7 @@ public class ReadExcelWithFormula {
 				Long hourMs=inputData.get(key);
 	            //get value of date from map
 	            JSONObject currentObj = CommonUtility.getValue(jsonArr,hourMs);
+	            
 
 	            if (currentObj!=null) {
 					//get pulse score for that date
@@ -140,7 +144,7 @@ public class ReadExcelWithFormula {
 	    	ex.printStackTrace();
 	    }
 	}
-	 private static Date truncateToDay(Date date) {
+	 public static Date truncateToDay(Date date) {
          Calendar calendar = Calendar.getInstance();
          calendar.setTime(date);
          calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -149,6 +153,16 @@ public class ReadExcelWithFormula {
          calendar.set(Calendar.MILLISECOND, 0);
          return calendar.getTime();
      }
+	 public static Date getUTCTime(Date date) {
+         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+         calendar.setTime(date);
+         calendar.set(Calendar.HOUR_OF_DAY, 0);
+         calendar.set(Calendar.MINUTE, 0);
+         calendar.set(Calendar.SECOND, 0);
+         calendar.set(Calendar.MILLISECOND, 0);
+         return calendar.getTime();
+     }
+	 
 
 	private static void handleRecord(HSSFSheet sheet,int currentRow,JSONObject jsonObject,HSSFEvaluationWorkbook 
 			formulaParsingWorkbook, SharedFormula sharedFormula,FormulaEvaluator evaluator,List tvl2CatsKeys) {
@@ -163,18 +177,11 @@ public class ReadExcelWithFormula {
 	}
 
 	private static void handleCellFromJson(Sheet sheet,int currentRow,JSONObject jsonObject,List tvl2CatsKeys) {
-		Long value = 0l;
-		// set date in 1st column : timestamp from JSON
-		if(jsonObject.get("articlePubDateMs") instanceof Double) {
-			value = new Double((Double) jsonObject.get("articlePubDateMs")).longValue();
-		} else if(jsonObject.get("articlePubDateMs") instanceof Long) {
-			value = (Long) jsonObject.get("articlePubDateMs");
-		} 
-
+	
 		if(sheet.getRow(currentRow) == null) {
 			sheet.createRow(currentRow);
     	 }
-    	 sheet.getRow(currentRow).getCell(0, Row.CREATE_NULL_AS_BLANK).setCellValue(new Date(value)); // set A1=2
+    	 sheet.getRow(currentRow).getCell(0, Row.CREATE_NULL_AS_BLANK).setCellValue((Date)jsonObject.get("pubDate")); // set A1=2
 					
 		//for tvl2Cats values
     	 JSONObject newValuesTvl2Cats = (JSONObject)jsonObject.get("tvl2Cats");

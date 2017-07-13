@@ -1,8 +1,8 @@
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -17,7 +17,7 @@ import com.mongodb.MongoClient;
 public class ReadInputData {
 	
 	public static JSONParser parser = new JSONParser();
-
+	
 	@SuppressWarnings("finally")
 	public static JSONArray getInputData() {
 		JSONObject jsonObject = null;
@@ -64,7 +64,8 @@ public class ReadInputData {
 
 		JSONArray jsonArr = null;
 		JSONArray newJsonArray = new JSONArray();
-		DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+		
 		try {
 			JSONParser jsonParser = new JSONParser();
 			jsonArr = (JSONArray) jsonParser.parse(apiResponse);
@@ -73,8 +74,10 @@ public class ReadInputData {
 				JSONObject newObj = new JSONObject();
 				 JSONObject jsonObj = (JSONObject) jsonArr.get(i);
 				 newObj.put("tvl2Cats", jsonObj.get("tvl2Cats"));
+				 format.setTimeZone(TimeZone.getTimeZone("UTC"));
+
 				 Date date = format.parse((String)jsonObj.get("pubDate"));
-				 newObj.put("articlePubDateMs",date.getTime());
+				 newObj.put("pubDate",date);
 				 newJsonArray.add(newObj);
 			}
 		} catch (Exception ex) {
