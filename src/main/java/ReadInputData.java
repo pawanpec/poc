@@ -3,6 +3,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -58,7 +59,9 @@ public class ReadInputData {
 			return jsonarray;
 		}
 	}
-
+	
+	
+	
 	public static JSONArray readInputDataFromAPI(String apiUrl) {
 		String apiResponse = CommonUtility.getAPIRespose(apiUrl);
 
@@ -69,16 +72,33 @@ public class ReadInputData {
 		try {
 			JSONParser jsonParser = new JSONParser();
 			jsonArr = (JSONArray) jsonParser.parse(apiResponse);
-			
+			Date previousDate=null;
+			JSONObject previousData=null;
 			for (int i = 0; i < jsonArr.size(); i++) {
 				JSONObject newObj = new JSONObject();
 				 JSONObject jsonObj = (JSONObject) jsonArr.get(i);
-				 newObj.put("tvl2Cats", jsonObj.get("tvl2Cats"));
+				 JSONObject tvl2cats=(JSONObject) jsonObj.get("tvl2Cats");
+				if(! tvl2cats.toJSONString().equals("{}")){
+				 newObj.put("tvl2Cats", tvl2cats);
 				 format.setTimeZone(TimeZone.getTimeZone("UTC"));
 
 				 Date date = format.parse((String)jsonObj.get("pubDate"));
 				 newObj.put("pubDate",date);
+				
+				 if(previousDate!=null){
+					long daysDiff= CommonUtility.getDifferenceDays(previousDate,date);
+					    int j=1;
+						while(daysDiff-- >1){
+							JSONObject newDataObj = new JSONObject();
+							//newDataObj.put("tvl2Cats", previousData.get("tvl2Cats"));
+							newDataObj.put("pubDate", CommonUtility.addDays(previousDate, j++));
+							newJsonArray.add(newDataObj);
+						}
+				 }
 				 newJsonArray.add(newObj);
+				 previousDate=date;
+				 previousData=newObj;
+			}
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();

@@ -3,9 +3,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,13 +28,11 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import com.sun.image.codec.jpeg.TruncatedFileException;
-
 
 public class ReadExcelWithFormula {
 	static int startColumn=1,endColumn=130;
-	public static final String urlString = "https://devapi.insight360.io/v3/data/companies/US30303M1027/series?start_date=2016-04-01&end_date=2016-04-30&metrics=allmetrics&score_type=pulse&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2RldmF1dGguaW5zaWdodDM2MC5pbyIsInN1YiI6ImZha2VfaW50ZXJuYWxfdHZsX2FwaV91c2VyQHRydXZhbHVlbGFicy5jb20iLCJleHAiOiIyMDE4LTA1LTA5VDEwOjE3OjM1LjQwMFoiLCJpYXQiOiIyMDE3LTA1LTA5VDEwOjE3OjM1LjQwMFoiLCJuYW1lIjoiSW50ZXJuYWwgQXBpIFVzZXIiLCJlbmMiOiJlMDRmYjE5ZDQwZDc5OTMzZDBiMzdkNmZjNGEzYzAzN2Q1NDVlY2MyOTdjZTY5Y2VmNzZhMzk2NGQzN2FjMGI1YmYyMDYzNTUyMDY1MjA4MWRmYzRkOGY2ZDU2OGY3ZWQ1ODliMDIyODcwOGI2MDk1ODEyYmQ4Yzg2NDJmZDZiYjAwZWY5MDNlMzQ5MjZhMzM1MTRhZjRiZjBiMDY5NTMyYmM4ZmZiNjNjZWM1ZGEyZWRjMDgwMjZlMDhlOTBjZGNkOWU3NTE0NmJmOGNiNmE5NGRlYzIxOTgyMGU4ZDRlYTc2NjU2NmZjNDkxYmY3OGNhYjk1YjU0YmNmMjM0ZGJjOTAyMDhlMTBhODFjY2NjN2UyYjQ2ODhhZTYzMDM1OWIyYmRjMjViZTAxNDZhYzFiMDhkNTdiZWQ4MjZiYWQzMmRiNjVjNDk4MTRhZmI4MjhmM2UxYzQ1NTlhMzhjMzA2ZDI0MmY3NGRjYmM3OTgxOTE5N2ZkOWNlNjM1MjNjZWJmMmU2YWU1ZjkxNTQxN2I4MTIwNWViZjAzYmRjYzM3OTU2OGM0NTk2YjBhNTdiZTBjYjNiNDRiOTIyNGZlYzg5MmRlMWVlMDhhYTlhOWUxODljNTBkZGFkN2EwNmIzNDVlNDFhNGYyMTgxODMwMWI1ODUzZjYxZmU2ZmU2MWM5NDllOTQ0OTQzZWQ4ZWY1OWZhZjc1YzE4N2I0In0.ViYLzDvwPysQsjZrWTeItwX74xVzVhdByIdTRdTU748";
-	public static final String apiUrl = "https://devapi.insight360.io/v3/data/articles?start_date=2016-04-01&end_date=2016-04-30&ISIN=US30303M1027&token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwczovL2RldmF1dGguaW5zaWdodDM2MC5pbyIsInN1YiI6InNzZGUiLCJleHAiOiIyMDE4LTA3LTA2VDIwOjQ2OjM0LjQzNVoiLCJpYXQiOiIyMDE3LTA3LTA2VDIwOjQ2OjM0LjQzNVoiLCJuYW1lIjoiWW9naURRIiwiZW5jIjoiZTA0ZmIxOWQ0MGQ3OTkzM2QwYjM3ZDZmYzRhM2MwMzdkNTQwZWZjMzk4Y2U2OWNlZjc2YTM5NjRkMzdhYzBiNWJmMjA2NzAxNzg2MzcyODZkZjk0ZDlhMzg4MzNmYWJlNWE5ODUzMjI3M2Q3NmM5YTgxMmJkOGM4NjQyZmQ2YmIwMGVmOTAzZTM0OTI2YTMzNTE0YWY0YmI1ZjVlOTM2MGJiOGZhYjYyOWI5ODgxMjM4ZjBhMDEzZjAyZWE1MGQwZDZlNzUxNDZiZjhjYjZhOTRkZWMyMTk4MjBlOGQ0ZWE3NjY1NjZlOTViMTRmN2YxZWVkOWFlNWNkYTJjNDJiOWI1MzU4YzE1OTgxM2Y1Y2E5ZmZiMzlkYWFkNDUyNDg4NmY5Mzc2ZTY0NjQ3YTUxZTA5OTIzNGJjZGE2NWI2N2NjMDNmODRkZDU5ZTNhMzNkZmVmMDhmMDBkNjEwZDc0ZGJkMTNhNzA2ZDhkYTgzNWEwZjJiOWZlMjY3MGY2MGYxZjFmNmM3MDRjNDBlMzI4YzA5MWFlYmFjN2NkY2MxN2M0MGRkMTZkYmJmYTYzMDhmYzMyMzRiIn0.J-lgV5EsDCaJlZibkvgr1vgwvAC0yhitB_yN7SrkbJ4";
+	public static final String urlString = "http://localhost:2891/companies/US30303M1027/series?start_date=2015-01-01&end_date=2015-01-25&metrics=ProductIntegrityAndInnovation&score_type=pulse&mode=%7B+%22isSasb%22+%3A+false+%7D";
+	public static final String apiUrl = "http://localhost:2891/articles?start_date=2015-01-01&end_date=2015-01-25&categories=ProductIntegrityAndInnovation&ISINs=US30303M1027&article_cap=10000";
 	
 	public static void main(String args[]) {
 		int currentRow = 12;
@@ -95,18 +91,18 @@ public class ReadExcelWithFormula {
 				Date d2 = cell2.getDateCellValue();
 				
 	        	if (d1!=null&&d2!=null) {
-	        		d1=truncateToDay(d1);
-	        		d2=truncateToDay(d2);
+	        		d1=CommonUtility.truncateToDay(d1);
+	        		d2=CommonUtility.truncateToDay(d2);
 	        		
 					if (d1.getTime() == d2.getTime()) {
 						continue;
 					} else {
-						inputData.put(i, getUTCTime(d1).getTime());
+						inputData.put(i, CommonUtility.getUTCTime(d1).getTime());
 					} 
 				}else{
 					if (d1!=null) {
-						d1=truncateToDay(d1);
-						inputData.put(i, getUTCTime(d1).getTime());
+						d1=CommonUtility.truncateToDay(d1);
+						inputData.put(i, CommonUtility.getUTCTime(d1).getTime());
 					}
 				}
 	        }
@@ -144,24 +140,7 @@ public class ReadExcelWithFormula {
 	    	ex.printStackTrace();
 	    }
 	}
-	 public static Date truncateToDay(Date date) {
-         Calendar calendar = Calendar.getInstance();
-         calendar.setTime(date);
-         calendar.set(Calendar.HOUR_OF_DAY, 0);
-         calendar.set(Calendar.MINUTE, 0);
-         calendar.set(Calendar.SECOND, 0);
-         calendar.set(Calendar.MILLISECOND, 0);
-         return calendar.getTime();
-     }
-	 public static Date getUTCTime(Date date) {
-         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-         calendar.setTime(date);
-         calendar.set(Calendar.HOUR_OF_DAY, 0);
-         calendar.set(Calendar.MINUTE, 0);
-         calendar.set(Calendar.SECOND, 0);
-         calendar.set(Calendar.MILLISECOND, 0);
-         return calendar.getTime();
-     }
+	
 	 
 
 	private static void handleRecord(HSSFSheet sheet,int currentRow,JSONObject jsonObject,HSSFEvaluationWorkbook 
