@@ -2,6 +2,9 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -16,6 +19,12 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 public class CommonUtility {
+	public static void main(String[] args) throws ParseException {
+		String inputString = "07-01-2015";
+		DateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+		Date inputDate = dateFormat.parse(inputString);
+		System.out.println(getUTCTime(inputDate));
+	}
 	public static Date truncateToDay(Date date) {
 		Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
@@ -26,14 +35,8 @@ public class CommonUtility {
 		return calendar.getTime();
 	}
 
-	public static Date getUTCTime(Date date) {
-		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-		calendar.setTime(date);
-		calendar.set(Calendar.HOUR_OF_DAY, 0);
-		calendar.set(Calendar.MINUTE, 0);
-		calendar.set(Calendar.SECOND, 0);
-		calendar.set(Calendar.MILLISECOND, 0);
-		return calendar.getTime();
+	public static long getUTCTime(Date date) {
+		return Date.UTC(date.getYear(),date.getMonth(), date.getDate(), 0, 0, 0);
 	}
 
 	public static long getDifferenceDays(Date d1, Date d2) {

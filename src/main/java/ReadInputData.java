@@ -81,8 +81,6 @@ public class ReadInputData {
 				 JSONObject tvl2cats=(JSONObject) jsonObj.get("tvl2Cats");
 				if(! tvl2cats.toJSONString().equals("{}")){
 				 newObj.put("tvl2Cats", tvl2cats);
-				 format.setTimeZone(TimeZone.getTimeZone("UTC"));
-
 				 Date date = format.parse((String)jsonObj.get("pubDate"));
 				 newObj.put("pubDate",CommonUtility.truncateToDay(date));
 				

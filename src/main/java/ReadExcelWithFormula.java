@@ -29,14 +29,13 @@ import org.json.simple.JSONObject;
 
 public class ReadExcelWithFormula {
 	static int startColumn=1,endColumn=130;
-	public static final String urlString = "http://localhost:2891/companies/US30303M1027/series?start_date=2015-01-01&end_date=2015-02-25&metrics=allmetrics&score_type=pulse&mode=%7B+%22isSasb%22+%3A+false+%7D";
-	public static final String apiUrl = "http://localhost:2891/articles?start_date=2015-01-01&end_date=2015-02-25&ISINs=US30303M1027&article_cap=10000";
+	public static final String urlString = "http://localhost:2891/companies/US30303M1027/series?start_date=2015-01-01&end_date=2015-10-25&metrics=allmetrics&score_type=pulse&mode=%7B+%22isSasb%22+%3A+false+%7D";
+	public static final String apiUrl = "http://localhost:2891/articles?start_date=2015-01-01&end_date=2015-10-25&ISINs=US30303M1027&article_cap=10000";
 	
 	public static void main(String args[]) {
 		int currentRow = 12;
 	    FileInputStream inp = null;
 	    FileOutputStream output_file = null;
-	    JSONObject jsonObject=null;
 	    HSSFWorkbook workbook;
 	    
 	    try {            
@@ -47,84 +46,9 @@ public class ReadExcelWithFormula {
 			FormulaEvaluator evaluator = workbook.getCreationHelper().createFormulaEvaluator();
 			JSONArray jsonarray = ReadInputData.readInputDataFromAPI(apiUrl);			
             HSSFSheet sheet = workbook.getSheetAt(0);
-	        Row row = sheet.getRow(8);
-	        List tvl2CatsKeys = new ArrayList();
-	        
-	        if(row != null) {
-	        	for(Cell cell : row) {
-	        		if (cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getRichStringCellValue().getString().trim() != "") {
-	        			if(cell.getColumnIndex() != 0 && cell.getColumnIndex() != 1) {			
-	        			tvl2CatsKeys.add(cell.getRichStringCellValue().getString().trim());
-	                }
-	        	}
-	          }
-	        }
-	        
-	        for(Object obj : jsonarray) {
-	        	jsonObject = null;
-	        	jsonObject = (JSONObject) obj; 
-				handleRecord(sheet,currentRow,jsonObject,formulaParsingWorkbook, sharedFormula,evaluator,tvl2CatsKeys);
-				currentRow++;
-	        }
-	        int totalRows=12+jsonarray.size() ;
-	        for (int i = 0; i < tvl2CatsKeys.size(); i++) {
-				int cellNumber = searchKey(sheet, 8, (String) tvl2CatsKeys.get(i));
-				// raw value will be found (or added) at row : currentRow and
-				// column : cellNumber -2
-				Cell c = sheet.getRow(8).getCell(cellNumber - 2, Row.CREATE_NULL_AS_BLANK);
-				String formula = c.toString();
-				if (formula.length() > 3) {
-					String newFormula = formula.substring(0, formula.length() - 3) +totalRows + ")";
-					c.setCellType(HSSFCell.CELL_TYPE_FORMULA);
-					c.setCellFormula(newFormula);
-				}
-
-			}
-	        Map<Integer, Long> inputData=new LinkedHashMap<Integer, Long>();
-	        for (int i = 11; i <totalRows-1; i++) {
-	        	
-	        	Cell cell1 = sheet.getRow(i).getCell(0, Row.CREATE_NULL_AS_BLANK);
-	        	Cell cell2 = sheet.getRow(i+1).getCell(0, Row.CREATE_NULL_AS_BLANK);
-	        	Date d1 = cell1.getDateCellValue();	    
-				Date d2 = cell2.getDateCellValue();
-				
-	        	if (d1!=null&&d2!=null) {
-	        		d1=CommonUtility.truncateToDay(d1);
-	        		d2=CommonUtility.truncateToDay(d2);
-	        		
-					if (d1.getTime() == d2.getTime()) {
-						continue;
-					} else {
-						inputData.put(i, CommonUtility.getUTCTime(d1).getTime());
-					} 
-				}else{
-					if (d1!=null) {
-						d1=CommonUtility.truncateToDay(d1);
-						inputData.put(i, CommonUtility.getUTCTime(d1).getTime());
-					}
-				}
-	        }
-	        HSSFFormulaEvaluator.evaluateAllFormulaCells(workbook);
-	        
-	        //fetch api data
-	        JSONArray  jsonArr = CommonUtility.getDataFromAPI(urlString);
-	        
-	        //iterate over map	        
-	        Set<Integer> keys=inputData.keySet();
-	        for (Integer key : keys) {
-				Long hourMs=inputData.get(key);
-	            //get value of date from map
-	            JSONObject currentObj = CommonUtility.getValue(jsonArr,hourMs);
-	            
-
-	            if (currentObj!=null) {
-					//get pulse score for that date
-					JSONObject pulseObj = (JSONObject) currentObj.get("pulse");
-					//get row to update which is a key in map	        
-					//iterate over pulse score object and update the pulse score in actual field
-					CommonUtility.updateCurrentRowActualScore(key, pulseObj, sheet);
-				}
-	        }
+            int totalRows=12+jsonarray.size() ;
+	        writeArticlesData(currentRow, formulaParsingWorkbook, sharedFormula, evaluator, jsonarray, sheet,totalRows);
+	        writeSeriesData(workbook, sheet, totalRows);
 	        
 	        	        
 	        inp.close();
@@ -137,6 +61,96 @@ public class ReadExcelWithFormula {
 	    } catch (IOException ex) {
 	    	ex.printStackTrace();
 	    }
+	}
+
+
+
+	private static void writeArticlesData(int currentRow, HSSFEvaluationWorkbook formulaParsingWorkbook,
+			SharedFormula sharedFormula, FormulaEvaluator evaluator, JSONArray jsonarray, HSSFSheet sheet,int totalRows) {
+		JSONObject jsonObject;
+		Row row = sheet.getRow(8);
+		List tvl2CatsKeys = new ArrayList();
+		
+		if(row != null) {
+			for(Cell cell : row) {
+				if (cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().trim() != "") {
+					if(cell.getColumnIndex() != 0 && cell.getColumnIndex() != 1) {			
+					tvl2CatsKeys.add(cell.getStringCellValue().trim());
+		        }
+			}
+		  }
+		}
+		
+		for(Object obj : jsonarray) {
+			jsonObject = null;
+			jsonObject = (JSONObject) obj; 
+			handleRecord(sheet,currentRow,jsonObject,formulaParsingWorkbook, sharedFormula,evaluator,tvl2CatsKeys);
+			currentRow++;
+		}
+		
+		for (int i = 0; i < tvl2CatsKeys.size(); i++) {
+			int cellNumber = searchKey(sheet, 8, (String) tvl2CatsKeys.get(i));
+			// raw value will be found (or added) at row : currentRow and
+			// column : cellNumber -2
+			Cell c = sheet.getRow(8).getCell(cellNumber - 2, Row.CREATE_NULL_AS_BLANK);
+			String formula = c.toString();
+			if (formula.length() > 3) {
+				String newFormula = formula.substring(0, formula.length() - 3) +totalRows + ")";
+				c.setCellType(HSSFCell.CELL_TYPE_FORMULA);
+				c.setCellFormula(newFormula);
+			}
+
+		}
+	}
+
+
+
+	private static void writeSeriesData(HSSFWorkbook workbook, HSSFSheet sheet, int totalRows) {
+		Map<Integer, Long> inputData=new LinkedHashMap<Integer, Long>();
+		for (int i = 11; i <totalRows-1; i++) {
+			
+			Cell cell1 = sheet.getRow(i).getCell(0, Row.CREATE_NULL_AS_BLANK);
+			Cell cell2 = sheet.getRow(i+1).getCell(0, Row.CREATE_NULL_AS_BLANK);
+			Date d1 = cell1.getDateCellValue();	    
+			Date d2 = cell2.getDateCellValue();
+			
+			if (d1!=null&&d2!=null) {
+				d1=CommonUtility.truncateToDay(d1);
+				d2=CommonUtility.truncateToDay(d2);
+				
+				if (d1.getTime() == d2.getTime()) {
+					continue;
+				} else {
+					inputData.put(i+1, CommonUtility.getUTCTime(d1));
+				} 
+			}else{
+				if (d1!=null) {
+					d1=CommonUtility.truncateToDay(d1);
+					inputData.put(i+1, CommonUtility.getUTCTime(d1));
+				}
+			}
+		}
+		HSSFFormulaEvaluator.evaluateAllFormulaCells(workbook);
+		
+		//fetch api data
+		JSONArray  jsonArr = CommonUtility.getDataFromAPI(urlString);
+		
+		//iterate over map	        
+		Set<Integer> keys=inputData.keySet();
+		for (Integer key : keys) {
+			Long hourMs=inputData.get(key);
+		    //get value of date from map
+		    JSONObject currentObj = CommonUtility.getValue(jsonArr,hourMs);
+		    
+
+		    if (currentObj!=null) {
+				//get pulse score for that date
+				JSONObject pulseObj = (JSONObject) currentObj.get("pulse");
+				//get row to update which is a key in map	        
+				//iterate over pulse score object and update the pulse score in actual field
+				CommonUtility.updateCurrentRowActualScore(key, pulseObj, sheet);
+			}
+		}
 	}
 	
 	 
