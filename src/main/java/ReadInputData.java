@@ -70,6 +70,7 @@ public class ReadInputData {
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 		
 		try {
+			Date startDate=new SimpleDateFormat("dd/MM/yyyy").parse("01/01/2015");  
 			JSONParser jsonParser = new JSONParser();
 			jsonArr = (JSONArray) jsonParser.parse(apiResponse);
 			Date previousDate=null;
@@ -83,7 +84,7 @@ public class ReadInputData {
 				 format.setTimeZone(TimeZone.getTimeZone("UTC"));
 
 				 Date date = format.parse((String)jsonObj.get("pubDate"));
-				 newObj.put("pubDate",date);
+				 newObj.put("pubDate",CommonUtility.truncateToDay(date));
 				
 				 if(previousDate!=null){
 					long daysDiff= CommonUtility.getDifferenceDays(previousDate,date);
@@ -91,7 +92,7 @@ public class ReadInputData {
 						while(daysDiff-- >1){
 							JSONObject newDataObj = new JSONObject();
 							//newDataObj.put("tvl2Cats", previousData.get("tvl2Cats"));
-							newDataObj.put("pubDate", CommonUtility.addDays(previousDate, j++));
+							newDataObj.put("pubDate", CommonUtility.truncateToDay(CommonUtility.addDays(previousDate, j++)));
 							newJsonArray.add(newDataObj);
 						}
 				 }

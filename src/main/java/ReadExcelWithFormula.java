@@ -2,13 +2,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TimeZone;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFEvaluationWorkbook;
@@ -31,8 +29,8 @@ import org.json.simple.JSONObject;
 
 public class ReadExcelWithFormula {
 	static int startColumn=1,endColumn=130;
-	public static final String urlString = "http://localhost:2891/companies/US30303M1027/series?start_date=2015-01-01&end_date=2015-01-25&metrics=ProductIntegrityAndInnovation&score_type=pulse&mode=%7B+%22isSasb%22+%3A+false+%7D";
-	public static final String apiUrl = "http://localhost:2891/articles?start_date=2015-01-01&end_date=2015-01-25&categories=ProductIntegrityAndInnovation&ISINs=US30303M1027&article_cap=10000";
+	public static final String urlString = "http://localhost:2891/companies/US30303M1027/series?start_date=2015-01-01&end_date=2015-02-25&metrics=allmetrics&score_type=pulse&mode=%7B+%22isSasb%22+%3A+false+%7D";
+	public static final String apiUrl = "http://localhost:2891/articles?start_date=2015-01-01&end_date=2015-02-25&ISINs=US30303M1027&article_cap=10000";
 	
 	public static void main(String args[]) {
 		int currentRow = 12;
